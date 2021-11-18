@@ -12,6 +12,7 @@ TrajectoryGenerator::TrajectoryGenerator() : private_nh_("~"), scan_updated_(fal
     private_nh_.param("MAX_D_YAWRATE", MAX_D_YAWRATE, 1.6);
     private_nh_.param("VELOCITY_RESOLUTION", VELOCITY_RESOLUTION, 0.01);
     private_nh_.param("YAWRATE_RESOLUTION", YAWRATE_RESOLUTION, 0.05);
+    private_nh_.param("ROBOT_RADIUS", ROBOT_RADIUS, 0.15);
     private_nh_.param("PREDICT_TIME", PREDICT_TIME, 5.0);
     TIME_DEFFERENCE = 1.0 / HZ;
 
@@ -48,7 +49,7 @@ void TrajectoryGenerator::calc_trajectories(trajectory_generator::PathArray* pat
             nav_msgs::Path path;
             path.header = pose_.header;
             simulate_trajectory(velocity, yawrate, init_state, &path);
-            paths_ptr->pathes.push_back(path);
+            paths_ptr->paths.push_back(path);
         }
     }
 }
@@ -90,12 +91,65 @@ void TrajectoryGenerator::motion(const double velocity, const double yawrate, St
     state->yawrate = yawrate;
 }
 
+void TrajectoryGenerator::get_obstacle_coordinates(std::vector<std::pair<double, double>>* obstacle_coordinates_ptr) {
+    // global robot state
+    double robot_x = pose_.pose.pose.position.x;
+    double robot_y = pose_.pose.pose.position.y;
+    tf2::Quaternion robot_quat;
+    tf2::convert(pose_.pose.pose.orientation, robot_quat);
+    double robot_yaw = tf2::getYaw(robot_quat);
+
+    double angle = scan_.angle_min;
+    for (auto r : scan_.ranges) {
+        double x = r * std::cos(angle + robot_yaw);
+        double y = r * std::sin(angle + robot_yaw);
+        obstacle_coordinates_ptr->emplace_back(x + robot_x, y + robot_y);
+        angle += scan_.angle_increment;
+    }
+}
+
+bool TrajectoryGenerator::is_collision(int num_path, const nav_msgs::Path& path,
+                                       const std::vector<std::pair<double, double>>& obstacle_coordinates) {
+    const int CALC_ORDER = 3e6;
+    int split_size = CALC_ORDER / (num_path * obstacle_coordinates.size());
+    if (split_size == 0) split_size = 1;
+    int reso = path.poses.size() / split_size;
+    for (int i = path.poses.size() - 1; i >= 0; i -= reso) {
+        double robot_x = path.poses[i].pose.position.x;
+        double robot_y = path.poses[i].pose.position.y;
+        for (const auto& obstacle_coordinate : obstacle_coordinates) {
+            double obs_x, obs_y;
+            std::tie(obs_x, obs_y) = obstacle_coordinate;
+            // use squared for calc speed
+            double dist_squared = (robot_x - obs_x) * (robot_x - obs_x) + (robot_y - obs_y) * (robot_y - obs_y);
+            if (dist_squared <= ROBOT_RADIUS * ROBOT_RADIUS) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void TrajectoryGenerator::remove_collision_path(trajectory_generator::PathArray* paths_ptr) {
+    std::vector<std::pair<double, double>> obstacle_coordinates;
+    get_obstacle_coordinates(&obstacle_coordinates);
+
+    int num_paths = paths_ptr->paths.size();
+    for (auto itr = paths_ptr->paths.begin(); itr != paths_ptr->paths.end();) {
+        if (is_collision(num_paths, *itr, obstacle_coordinates)) {
+            itr = paths_ptr->paths.erase(itr);
+        } else {
+            itr++;
+        }
+    }
+}
+
 void TrajectoryGenerator::visualize_trajectories(const trajectory_generator::PathArray& paths) {
     static const int max_trajectories_size = 1000;
-    ROS_ASSERT(paths.pathes.size() < max_trajectories_size);
+    ROS_ASSERT(paths.paths.size() < max_trajectories_size);
     visualization_msgs::MarkerArray trajectories;
     for (int i = 0; i < max_trajectories_size; i++) {
-        if (i < paths.pathes.size()) {
+        if (i < paths.paths.size()) {
             visualization_msgs::Marker trajectory;
             trajectory.header.frame_id = pose_.header.frame_id;
             trajectory.header.stamp = ros::Time::now();
@@ -113,7 +167,7 @@ void TrajectoryGenerator::visualize_trajectories(const trajectory_generator::Pat
             pose.orientation.w = 1;
             trajectory.pose = pose;
             geometry_msgs::Point p;
-            for (const auto& pose : paths.pathes[i].poses) {
+            for (const auto& pose : paths.paths[i].poses) {
                 p.x = pose.pose.position.x;
                 p.y = pose.pose.position.y;
                 trajectory.points.push_back(p);
@@ -144,7 +198,11 @@ void TrajectoryGenerator::process() {
             paths.header = pose_.header;
             paths.my_number = ROOMBA.back() - '0';
             calc_trajectories(&paths);
+            remove_collision_path(&paths);
             visualize_trajectories(paths);
+            scan_updated_ = false;
+            odom_updated_ = false;
+            pose_updated_ = false;
         } else {
             if (!scan_updated_) {
                 ROS_WARN_THROTTLE(1.0, "Scan has not been updated");

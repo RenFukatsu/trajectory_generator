@@ -2,7 +2,7 @@
 <launch>
     <param name="use_sim_time" value="true" />
 
-    <arg name="bag_dir" default="/home/ren/bagfiles/roomba/random_half_20211004/first" />
+    <arg name="bag_dir" default="$(env HOME)/bagfiles/roomba/random_half_20211004/first" />
     <arg name="bag_command" default="$(arg bag_dir)/roomba2_dkan_random_walk_2021-10-04-21-47-54.bag $(arg bag_dir)/roomba4_dkan_random_walk_2021-10-04-21-48-12.bag $(arg bag_dir)/roomba6_dkan_random_walk_2021-10-04-21-48-33.bag $(arg bag_dir)/roomba3_dkan_random_walk_2021-10-04-21-48-03.bag $(arg bag_dir)/roomba5_dkan_random_walk_2021-10-04-21-48-21.bag" />
     <!-- <arg name="bag_dir" default="/home/ren/bagfiles/roomba/random_half_20211004/second" />
     <arg name="bag_command" default="$(arg bag_dir)/roomba1_dkan_random_walk_2021-10-04-23-11-03.bag $(arg bag_dir)/roomba4_dkan_random_walk_2021-10-04-23-12-35.bag $(arg bag_dir)/roomba6_dkan_random_walk_2021-10-04-23-13-02.bag $(arg bag_dir)/roomba3_dkan_random_walk_2021-10-04-23-12-23.bag $(arg bag_dir)/roomba5_dkan_random_walk_2021-10-04-23-12-49.bag" /> -->
