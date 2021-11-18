@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="roomba" />
+    <arg name="hz" default="20"/>
+
+    <node pkg="trajectory_generator" type="trajectory_generator" name="trajectory_generator" >
+        <param name="ROOMBA" value="$(arg roomba)" />
+        <param name="HZ" value="$(arg hz)"/>
+    </node>
+</launch>
