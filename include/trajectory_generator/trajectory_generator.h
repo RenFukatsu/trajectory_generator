@@ -30,9 +30,10 @@ class TrajectoryGenerator {
     void simulate_trajectory(double velocity, double yawrate, const State& init_state, nav_msgs::Path* path_ptr);
     void motion(const double velocity, const double yawrate, State* state);
     void get_obstacle_coordinates(std::vector<std::pair<double, double>>* obstacle_coordinates_ptr);
-    bool is_collision(int num_paths, const nav_msgs::Path& path, const std::vector<std::pair<double, double>>& obstacle_coordinates);
+    bool is_collision(int num_paths, const nav_msgs::Path& path,
+                      const std::vector<std::pair<double, double>>& obstacle_coordinates);
     void remove_collision_path(trajectory_generator::PathArray* paths_ptr);
-    void visualize_trajectories(const trajectory_generator::PathArray &paths);
+    void visualize_trajectories(const trajectory_generator::PathArray& paths);
     void scan_callback(const sensor_msgs::LaserScanConstPtr& input_scan);
     void pose_callback(const geometry_msgs::PoseWithCovarianceStampedConstPtr& input_pose);
     void odom_callback(const nav_msgs::OdometryConstPtr& input_odom);

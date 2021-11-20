@@ -16,10 +16,11 @@ TrajectoryGenerator::TrajectoryGenerator() : private_nh_("~"), scan_updated_(fal
     private_nh_.param("PREDICT_TIME", PREDICT_TIME, 5.0);
     TIME_DEFFERENCE = 1.0 / HZ;
 
-    visualize_trajectories_pub_ = private_nh_.advertise<visualization_msgs::MarkerArray>("visualize_trajectories", 1);
     scan_sub_ = nh_.subscribe("scan", 1, &TrajectoryGenerator::scan_callback, this);
     pose_sub_ = nh_.subscribe("pose", 1, &TrajectoryGenerator::pose_callback, this);
     odom_sub_ = nh_.subscribe("odom", 1, &TrajectoryGenerator::odom_callback, this);
+    visualize_trajectories_pub_ = private_nh_.advertise<visualization_msgs::MarkerArray>("visualize_trajectories", 1);
+    trajectories_pub_ = nh_.advertise<trajectory_generator::PathArray>("trajectories", 1);
 }
 
 void TrajectoryGenerator::scan_callback(const sensor_msgs::LaserScanConstPtr& input_scan) {
@@ -200,6 +201,7 @@ void TrajectoryGenerator::process() {
             calc_trajectories(&paths);
             remove_collision_path(&paths);
             visualize_trajectories(paths);
+            trajectories_pub_.publish(paths);
             scan_updated_ = false;
             odom_updated_ = false;
             pose_updated_ = false;
