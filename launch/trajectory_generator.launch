@@ -2,10 +2,30 @@
 
 <launch>
     <arg name="roomba" />
-    <arg name="hz" default="20"/>
+    <arg name="ROBOT_FRAME" default="base_link"/>
+    <arg name="HZ" default="10.0"/>
+    <arg name="MAX_VELOCITY" default="0.5"/>
+    <arg name="MIN_VELOCITY" default="-0.5"/>
+    <arg name="MAX_YAWRATE" default="1.5"/>
+    <arg name="MAX_ACCELERATION" default="1.8"/>
+    <arg name="MAX_D_YAWRATE" default="1.6"/>
+    <arg name="VELOCITY_RESOLUTION" default="0.01"/>
+    <arg name="YAWRATE_RESOLUTION" default="0.05"/>
+    <arg name="ROBOT_RADIUS" default="0.15"/>
+    <arg name="PREDICT_TIME" default="5.0"/>
 
     <node pkg="trajectory_generator" type="trajectory_generator" name="trajectory_generator" >
         <param name="ROOMBA" value="$(arg roomba)" />
-        <param name="HZ" value="$(arg hz)"/>
+        <param name="ROBOT_FRAME" value="$(arg )"/>
+        <param name="HZ" value="$(arg )"/>
+        <param name="MAX_VELOCITY" value="$(arg )"/>
+        <param name="MIN_VELOCITY" value="$(arg )"/>
+        <param name="MAX_YAWRATE" value="$(arg )"/>
+        <param name="MAX_ACCELERATION" value="$(arg )"/>
+        <param name="MAX_D_YAWRATE" value="$(arg )"/>
+        <param name="VELOCITY_RESOLUTION" value="$(arg )"/>
+        <param name="YAWRATE_RESOLUTION" value="$(arg )"/>
+        <param name="ROBOT_RADIUS" value="$(arg )"/>
+        <param name="PREDICT_TIME" value="$(arg )"/>
     </node>
 </launch>
