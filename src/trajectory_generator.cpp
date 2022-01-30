@@ -47,8 +47,10 @@ void TrajectoryGenerator::calc_trajectories(trajectory_generator::PathArray* pat
     State init_state = get_init_state();
     for (double velocity = min_velocity; velocity <= max_velocity; velocity += VELOCITY_RESOLUTION) {
         for (double yawrate = min_yawrate; yawrate <= max_yawrate; yawrate += YAWRATE_RESOLUTION) {
-            nav_msgs::Path path;
+            trajectory_generator::Path path;
             path.header = pose_.header;
+            path.velocity = velocity;
+            path.yawrate = yawrate;
             simulate_trajectory(velocity, yawrate, init_state, &path);
             paths_ptr->paths.push_back(path);
         }
@@ -66,7 +68,7 @@ TrajectoryGenerator::State TrajectoryGenerator::get_init_state() {
 }
 
 void TrajectoryGenerator::simulate_trajectory(double velocity, double yawrate, const State& init_state,
-                                              nav_msgs::Path* path_ptr) {
+                                              trajectory_generator::Path* path_ptr) {
     State state = init_state;
     for (double time = 0; time <= PREDICT_TIME; time += TIME_DEFFERENCE) {
         motion(velocity, yawrate, &state);
@@ -109,7 +111,7 @@ void TrajectoryGenerator::get_obstacle_coordinates(std::vector<std::pair<double,
     }
 }
 
-bool TrajectoryGenerator::is_collision(int num_path, const nav_msgs::Path& path,
+bool TrajectoryGenerator::is_collision(int num_path, const trajectory_generator::Path& path,
                                        const std::vector<std::pair<double, double>>& obstacle_coordinates) {
     const int CALC_ORDER = 3e6;
     int split_size = CALC_ORDER / (num_path * obstacle_coordinates.size());

@@ -27,10 +27,11 @@ class TrajectoryGenerator {
     void process();
     void calc_trajectories(trajectory_generator::PathArray* paths_ptr);
     State get_init_state();
-    void simulate_trajectory(double velocity, double yawrate, const State& init_state, nav_msgs::Path* path_ptr);
+    void simulate_trajectory(double velocity, double yawrate, const State& init_state,
+                             trajectory_generator::Path* path_ptr);
     void motion(const double velocity, const double yawrate, State* state);
     void get_obstacle_coordinates(std::vector<std::pair<double, double>>* obstacle_coordinates_ptr);
-    bool is_collision(int num_paths, const nav_msgs::Path& path,
+    bool is_collision(int num_paths, const trajectory_generator::Path& path,
                       const std::vector<std::pair<double, double>>& obstacle_coordinates);
     void remove_collision_path(trajectory_generator::PathArray* paths_ptr);
     void visualize_trajectories(const trajectory_generator::PathArray& paths);
