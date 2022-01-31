@@ -156,10 +156,10 @@ void TrajectoryGenerator::visualize_trajectories(const trajectory_generator::Pat
             visualization_msgs::Marker trajectory;
             trajectory.header.frame_id = pose_.header.frame_id;
             trajectory.header.stamp = ros::Time::now();
-            trajectory.color.r = 1;
-            trajectory.color.g = 0;
+            trajectory.color.r = 0;
+            trajectory.color.g = 1;
             trajectory.color.b = 0;
-            trajectory.color.a = 0.8;
+            trajectory.color.a = 0.2;
             trajectory.ns = visualize_trajectories_pub_.getTopic();
             trajectory.type = visualization_msgs::Marker::LINE_STRIP;
             trajectory.action = visualization_msgs::Marker::ADD;
